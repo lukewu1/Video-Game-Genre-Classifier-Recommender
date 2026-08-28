@@ -50,17 +50,14 @@ def build_embeddings(img_dir: str, n_games: int, base_model=None):
         path = f"{img_dir}/{idx}.jpg"
         if not os.path.exists(path):
             continue
-
         img = load_and_preprocess(path)
         emb = base_model.predict(img, verbose=0)[0]  # shape: (1280,)
-
         embeddings.append(emb)
         valid_indices.append(idx)
 
     embeddings = np.array(embeddings)
     embeddings_norm = normalize(embeddings)
     print("Embedding matrix shape:", embeddings.shape)
-
     return embeddings_norm, valid_indices
 
 
@@ -91,10 +88,18 @@ def show_game(idx: int, img_dir: str):
 
 
 if __name__ == "__main__":
-    IMG_DIR = "game_images"
-    N_GAMES = 5000  # TODO: replace with len(lm_df) from your dataset
+    from data_pipeline import build_dataset
 
-    embeddings_norm, valid_indices = build_embeddings(IMG_DIR, N_GAMES)
+    IMG_DIR = "game_images"
+
+    # Was previously a hardcoded placeholder (N_GAMES = 5000). Using the
+    # actual cleaned dataset size instead, so the embedding pass covers
+    # every game that survived data_pipeline's cleaning/filtering, not an
+    # arbitrary guessed count.
+    lm_df, tag_df, genre_df, platform_df, status_df = build_dataset("video_games.csv")
+    n_games = len(lm_df)
+
+    embeddings_norm, valid_indices = build_embeddings(IMG_DIR, n_games)
 
     game_id = 2314
     similar_ids = find_similar_games(game_id, embeddings_norm, valid_indices, top_k=5)
