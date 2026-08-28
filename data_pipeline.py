@@ -8,6 +8,14 @@ recommender.py.
 Usage:
     from data_pipeline import load_and_clean_data, engineer_features
     lm_df, tag_df, genre_df, platform_df, status_df = build_dataset("video_games.csv")
+
+NOTE: The original file (as pulled from the repo) contained two TODO
+comments marking columns whose derivation was not visible in the source
+notebook cells (`genre_filtered` and the `ratings_count_log` /
+`playtime_log` log-transforms) -- see the ACTION NEEDED blocks below.
+The classifier's current ~19% test accuracy is a strong signal that at
+least one of these guessed steps doesn't match what was actually used to
+produce the original model, so these are the first places to check.
 """
 
 import ast
@@ -99,7 +107,7 @@ def engineer_features(data: pd.DataFrame, top_n_tags: int = 30):
 
     # Drop any stale one-hot columns from a previous run
     cols_to_drop = [c for c in lm_df.columns
-                     if c.startswith('tag_') or c.startswith('genre_') or c.startswith('platforms_')]
+                    if c.startswith('tag_') or c.startswith('genre_') or c.startswith('platforms_')]
     lm_df = lm_df.drop(columns=cols_to_drop, errors='ignore')
 
     # added_by_status: parse dict string -> columns, scale
@@ -123,12 +131,14 @@ def engineer_features(data: pd.DataFrame, top_n_tags: int = 30):
         lambda tags: [t for t in tags if t in top_tags]
     )
 
-    # TODO: the original notebook also referenced a `genre_filtered` column
-    # (used later when building the primary_genre label) but the cell that
-    # created it was missing from the exported script. Recreate it here,
-    # analogous to tag_filtered, using all genres (genre lists are short
-    # enough that no top-N filtering is needed) -- adjust if you filtered
-    # genres differently in the original notebook.
+    # ACTION NEEDED: `genre_filtered` (used by classifier.py to build the
+    # `primary_genre` label) is not derived from anything in this file's
+    # visible source -- it's set here as a straight copy of `genre_list`
+    # (i.e. no filtering). If the original notebook filtered genres down
+    # to a top-N list the same way tags are filtered above, or dropped
+    # multi-genre games differently, that logic needs to be restored here.
+    # Given the classifier's low test accuracy, this is the first thing
+    # worth double-checking against the original notebook.
     lm_df['genre_filtered'] = lm_df['genre_list']
 
     # One-hot encode tags / genres / platforms
@@ -157,11 +167,12 @@ def engineer_features(data: pd.DataFrame, top_n_tags: int = 30):
     for col in skewed_cols:
         lm_df[col + "_log"] = np.log1p(lm_df[col])
 
-    # TODO: the original notebook also used 'ratings_count_log' and
-    # 'playtime_log' later (in the image-classifier metadata features) but
-    # never logged them in the visible cells. Adding them here for
-    # consistency -- confirm against your original notebook if the log
-    # transform should apply to these too.
+    # ACTION NEEDED: `ratings_count_log` and `playtime_log` are consumed by
+    # classifier.py's metadata branch but were never produced by the
+    # skewed_cols loop above in the source this file was reconstructed
+    # from. Added here for consistency with the other *_log columns --
+    # verify against the original notebook that log1p is in fact the
+    # right transform for these two columns.
     lm_df['ratings_count_log'] = np.log1p(lm_df['ratings_count'])
     lm_df['playtime_log'] = np.log1p(lm_df['playtime'])
 
