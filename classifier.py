@@ -14,6 +14,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import PIL.Image as Image
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -71,7 +72,6 @@ def prepare_classifier_data(lm_df: pd.DataFrame, tag_df: pd.DataFrame, img_dir: 
     ]].astype("float32").reset_index(drop=True)
 
     tags_clean = tags.astype("float32").reset_index(drop=True)
-
     meta_features = pd.concat([meta_numeric, tags_clean], axis=1)
     X_meta = meta_features.to_numpy().astype("float32")
 
@@ -93,8 +93,6 @@ def load_image_safe(path):
         p = p.decode("utf-8")
         if not os.path.exists(p):
             return np.zeros((IMG_SIZE, IMG_SIZE, 3), dtype=np.float32)
-
-        import PIL.Image as Image
         img = Image.open(p).convert("RGB")
         img = img.resize((IMG_SIZE, IMG_SIZE))
         arr = np.asarray(img, dtype=np.float32) / 255.0
@@ -108,7 +106,6 @@ def load_image_safe(path):
 def make_dataset(image_paths, meta_data, labels, batch_size=32, shuffle=True):
     path_ds = tf.data.Dataset.from_tensor_slices(image_paths)
     img_ds = path_ds.map(load_image_safe, num_parallel_calls=tf.data.AUTOTUNE)
-
     meta_ds = tf.data.Dataset.from_tensor_slices(meta_data)
     label_ds = tf.data.Dataset.from_tensor_slices(labels)
 
