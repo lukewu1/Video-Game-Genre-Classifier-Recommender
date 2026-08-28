@@ -6,6 +6,7 @@ and writes/updates a local CSV, deduplicating by RAWG game id.
 
 Requires a RAWG API key: https://rawg.io/apidocs
 Set it as an environment variable before running:
+
     export RAWG_API_KEY=your_key_here
 
 Usage:
@@ -97,7 +98,6 @@ def fetch_rawg_page(start: str, end: str, page: int):
 def scrape_all(years=YEARS) -> pd.DataFrame:
     """Page through every date bucket and collect all game records."""
     new_rows = []
-
     for start, end in years:
         print(f"Fetching games from {start} to {end}")
         for page in range(1, MAX_PAGES_PER_RANGE + 1):
@@ -116,7 +116,6 @@ def scrape_all(years=YEARS) -> pd.DataFrame:
 def save_or_merge(df_new: pd.DataFrame, csv_path: str):
     """Merge newly scraped rows into an existing CSV, deduplicating by id."""
     df_existing = None
-
     if os.path.exists(csv_path):
         try:
             df_existing = pd.read_csv(csv_path)
