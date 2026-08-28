@@ -20,6 +20,8 @@ Tech stack
 
 Python, Pandas, NumPy, Scikit-learn, TensorFlow/Keras, EfficientNetB0, Matplotlib/Seaborn
 
+<img width="803" height="715" alt="Screenshot 2026-08-27 200805" src="https://github.com/user-attachments/assets/06c3f1a8-7515-4007-9030-3e2a9e858000" />
+
 Setup
 bash
 pip install -r requirements.txt
